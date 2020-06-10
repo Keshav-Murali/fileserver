@@ -16,7 +16,7 @@
 	CREATE DATABASE project;
 	USE project;
         CREATE TABLE user(username varchar(30) PRIMARY KEY, password varchar(30), permission varchar(5), applied boolean, req_perm varchar(5));
-        CREATE TABLE file(filename varchar(255), path varchar(255), fordir varchar(1), type varchar(3), datetime timestamp, class varchar(3), PRIMARY KEY(filename, path, fordir));
+        CREATE TABLE file(filename varchar(255), path varchar(255), dir boolean, indexed boolean, type varchar(3), datetime timestamp, class varchar(3), PRIMARY KEY(filename, path, dir));
         /*
         Default user - admin
         */
@@ -49,7 +49,9 @@
 	  <li class="strike">Detect if the current folder already exists in the database</li>
 	  <li class="strike">If it exists, run a query from the database and display the page</li>
 	  <li class="strike">If not, then scan the folder, add the entries to the database, and display. Progress -> only the directory added</li>
-	 </ul>
+	</ul>
+	  <li class="strike">Proper directory path. For now project/sem4 gets stored as projectsem4, which obviously can lead to unintended behaviour (folders may not get added/scanned)</li>
+	  <li class="strike">Additionally, if a directory is added to the table (say it is on the same level as some index.php), it does not mean that it has been scanned. So it may be necessary to have another field in the file table to denote whether the directory has been indexed</li>
 	  <li>replicate index.php when 
 	  <ul>
 		<li>Indexing the current folder, and another directory is found</li> 

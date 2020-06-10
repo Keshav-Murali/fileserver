@@ -2,12 +2,12 @@
 
 <html>
   <head>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/project/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
       <?php
-        $dir = substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']));
-		echo $dir;
+        $full_path = substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']));
+		echo $full_path;
       ?>
     </title>
   </head>
@@ -15,7 +15,7 @@
   <body>
     <h1>
       <?php
-	    echo $dir;
+	    echo $full_path;
       ?>
     </h1>
      
@@ -24,19 +24,24 @@
         $DB_NAME = "project";
         $USER_TABLE = "user";
         $FILE_TABLE = "file";
-        $doclink = "/document.png";
-		$folderlink = "/folder.png";
-        $filelink = "/file.png";
+        $doclink = "/project/document.png";
+		$folderlink = "/project/folder.png";
+        $filelink = "/project/file.png";
 
-        $pos = strrpos($dir, '\\');
-        $file_name = substr($dir, $pos+1);
-        $directory = substr($dir, 0, $pos);
+        $pos = strrpos($full_path, '\\');
+        $folder_name = substr($full_path, $pos+1);
+        $directory = addcslashes(substr($full_path, 0, $pos), '\\');
+		$escaped_full_path = addcslashes($full_path, '\\');
 
         $mysqli = new mysqli("localhost", "root", "", "project");
-        $res = $mysqli->query("SELECT * from file where fordir=1 and filename='".$file_name."' and path='".$directory."'");
-  
-        if ($res->num_rows == 0) {
-          $mysqli->query("INSERT INTO file values('$file_name', '$directory', 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub')");
+        $res = $mysqli->query("SELECT * from file where dir=1 and filename='".$folder_name."' and path='".$directory."'");
+		
+		$tlimit = $res->num_rows;
+		if ($tlimit != 0)
+		  $templist = $res->fetch_all(MYSQLI_NUM);
+		
+        if (($tlimit == 0) || ($templist[0][3] == 0)) {
+          $mysqli->query("INSERT INTO file values('$folder_name', '$directory', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
 
           $list = scandir(".", 1);
           $listsize = count($list);
@@ -75,14 +80,14 @@
 
             $filelist[$fileindex] = array($list[$i], $ftype, $ffile);
             $fileindex++;
-            $mysqli->query("INSERT INTO file values('$list[$i]', '$dir', 0, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
+            $mysqli->query("INSERT INTO file values('$list[$i]', '$escaped_full_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
             }
 
             else if (is_dir($list[$i])) {
               if (! (($list[$i] == ".") || ($list[$i] == "..") || (preg_match('/_files/i', $list[$i])))) {	  
                 $newlist[$nlindex] = array($list[$i], "dir", $folderlink);
 	            $nlindex++;
-	            $mysqli->query("INSERT INTO file values('$list[$i]', '$dir', 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub')");	    
+	            $mysqli->query("INSERT INTO file values('$list[$i]', '$escaped_full_path', 1, 0, 'DIR', CURRENT_TIMESTAMP(), 'Pub')");	    
               }
             }
           }
@@ -92,22 +97,22 @@
         }
 
         else {
-          $qres = $mysqli->query("SELECT * from file where path='$dir'");
+          $qres = $mysqli->query("SELECT * from file where path='$escaped_full_path'");
           $templist = $qres->fetch_all(MYSQLI_NUM);
           $nlindex = $qres->num_rows;
           $newlist = array();
 
           for($i = 0; $i < $nlindex; $i++) {
-            if($templist[$i][3] == "IMG")
-              $templist[$i][3] = $templist[$i][0];
-            else if ($templist[$i][3] == "DOC")
-              $templist[$i][3] = $doclink;
-            else if ($templist[$i][3] == "DIR")
-              $templist[$i][3] = $folderlink;
+            if($templist[$i][4] == "IMG")
+              $templist[$i][4] = $templist[$i][0];
+            else if ($templist[$i][4] == "DOC")
+              $templist[$i][4] = $doclink;
+            else if ($templist[$i][4] == "DIR")
+              $templist[$i][4] = $folderlink;
             else
-              $templist[$i][3] = $filelink;
+              $templist[$i][4] = $filelink;
 
-            $newlist[$i] = array($templist[$i][0], $templist[$i][3], $templist[$i][3]);
+            $newlist[$i] = array($templist[$i][0], $templist[$i][4], $templist[$i][4]);
           }		       
         }
 	 
