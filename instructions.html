@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title>Read Me</title>
+    <style>
+      .strike {
+      text-decoration: line-through
+      }
+    </style>
+    
+  </head>
+
+  <body>
+    <h1>DB, Table creation</h1>
+    <pre>
+      <code>
+	CREATE DATABASE project;
+	USE project;
+        CREATE TABLE user(username varchar(30) PRIMARY KEY, password varchar(30), permission varchar(5), applied boolean, req_perm varchar(5));
+        CREATE TABLE file(filename varchar(255), path varchar(255), fordir varchar(1), type varchar(3), datetime timestamp, class varchar(3), PRIMARY KEY(filename, path, fordir));
+        /*
+        Default user - admin
+        */
+        INSERT INTO user values('admin', 'admin', 'admin', FALSE, NULL);
+      </code>
+    </pre>
+
+    <h1>DB, Table deletion</h1>
+    <pre>
+      <code>
+	DROP TABLE user;
+	DROP TABLE file;
+	DROP DATABASE project;
+      </code>
+    </pre>
+
+    <h2>Alternate</h2>
+    <pre>
+      <code>
+	TRUNCATE user;
+	TRUNCATE file;
+      </code>
+    </pre>
+    
+    <h1>TO DO</h1>
+    <ul>
+      <li class="strike">DB, Table deletion section</li>
+      <li>index.php</li>
+	<ul>
+	  <li class="strike">Detect if the current folder already exists in the database</li>
+	  <li class="strike">If it exists, run a query from the database and display the page</li>
+	  <li class="strike">If not, then scan the folder, add the entries to the database, and display. Progress -> only the directory added</li>
+	 
+	  </ul>
+      <li>admin.php</li>
+      <li>request.php</li>
+      <li>login.php</li>
+      <li>upload feature</li>
+      <li>rescan feature?</li>
+    </ul>
+  </body>
+  
+</html>
