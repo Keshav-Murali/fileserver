@@ -8,6 +8,10 @@
       <?php
         $full_path = substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']));
 		echo $full_path;
+		$pos = strrpos($full_path, '\\');
+        $folder_name = substr($full_path, $pos+1);
+        $directory = addcslashes(substr($full_path, 0, $pos), '\\');
+		$escaped_full_path = addcslashes($full_path, '\\');
       ?>
     </title>
   </head>
@@ -16,6 +20,10 @@
     <h1>
       <?php
 	    echo $full_path;
+		if ($full_path != "\project\sem4") {
+			$mod_directory = str_replace("\\\\", "/", $directory);
+			echo "<a class='up' href='$mod_directory'>&uarr;</a>";
+		}
       ?>
     </h1>
      
@@ -27,11 +35,6 @@
         $doclink = "/project/document.png";
 		$folderlink = "/project/folder.png";
         $filelink = "/project/file.png";
-
-        $pos = strrpos($full_path, '\\');
-        $folder_name = substr($full_path, $pos+1);
-        $directory = addcslashes(substr($full_path, 0, $pos), '\\');
-		$escaped_full_path = addcslashes($full_path, '\\');
 
         $mysqli = new mysqli("localhost", "root", "", "project");
         $res = $mysqli->query("SELECT * from file where dir=1 and filename='".$folder_name."' and path='".$directory."'");
