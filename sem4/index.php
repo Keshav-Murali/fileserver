@@ -87,7 +87,8 @@
               if (! (($list[$i] == ".") || ($list[$i] == "..") || (preg_match('/_files/i', $list[$i])))) {	  
                 $newlist[$nlindex] = array($list[$i], "dir", $folderlink);
 	            $nlindex++;
-	            $mysqli->query("INSERT INTO file values('$list[$i]', '$escaped_full_path', 1, 0, 'DIR', CURRENT_TIMESTAMP(), 'Pub')");	    
+	            $mysqli->query("INSERT INTO file values('$list[$i]', '$escaped_full_path', 1, 0, 'DIR', CURRENT_TIMESTAMP(), 'Pub')");	
+				copy("index.php", $list[$i].'\\'."index.php");	// Replicate index.php in subdirectory
               }
             }
           }

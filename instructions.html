@@ -10,6 +10,15 @@
   </head>
 
   <body>
+    <h1>How to set this up</h1>
+	<ol>
+	  <li>Install XAMPP</li>
+	  <li>Create folder project and download the <a link="https://github.com/Keshav-Murali/fileserver/">git repository</a> there</li>
+	  <li>Open phpmyadmin, copy-paste the <em>DB, Table creation</em> code into the SQL tab</li>
+	  <li>Reqd files: in project folder: sem4 folder, style.css, portabledoc.png, file.png, folder.png, document.png, question.png</li>
+	  <li>Set up all your files under the sem4 folder - this folder MUST contain index.php</li>
+      <li>Note: sem4 can have directories and subdirectories, and it is not necessary to manually place index.php in these folders</li>
+	</ol>
     <h1>DB, Table creation</h1>
     <pre>
       <code>
@@ -43,25 +52,17 @@
     
     <h1>TO DO</h1>
     <ul>
-      <li class="strike">DB, Table deletion section</li>
-      <li>index.php</li>
-	<ul>
-	  <li class="strike">Detect if the current folder already exists in the database</li>
-	  <li class="strike">If it exists, run a query from the database and display the page</li>
-	  <li class="strike">If not, then scan the folder, add the entries to the database, and display. Progress -> only the directory added</li>
-	</ul>
-	  <li class="strike">Proper directory path. For now project/sem4 gets stored as projectsem4, which obviously can lead to unintended behaviour (folders may not get added/scanned)</li>
-	  <li class="strike">Additionally, if a directory is added to the table (say it is on the same level as some index.php), it does not mean that it has been scanned. So it may be necessary to have another field in the file table to denote whether the directory has been indexed</li>
 	  <li>replicate index.php when 
 	  <ul>
 		<li>Indexing the current folder, and another directory is found</li> 
 		<li>Create folder from the web interface</li>
 	  </ul>
-      <li>admin.php</li>
-      <li>request.php</li>
-      <li>login.php</li>
-      <li>upload feature</li>
-      <li>rescan feature?</li>
+	  <li>login</li>
+      <li>admin tools</li>
+      <li>request for admin</li>
+      <li>upload files</li>
+	  <li>create folder</li>
+      <li>rescan</li>
     </ul>
   </body>
   
