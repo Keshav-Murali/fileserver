@@ -6,12 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
       <?php
-        $full_path = substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']));
-		echo $full_path;
-		$pos = strrpos($full_path, '\\');
-        $folder_name = substr($full_path, $pos+1);
-        $directory = addcslashes(substr($full_path, 0, $pos), '\\');
-		$escaped_full_path = addcslashes($full_path, '\\');
+        // $path - the path of the directory in which index.php resides
+        // $dir_name - the name of the above mentioned directory
+        // $parent_dir - the directory which contains the above mentioned directory
+        // This is because a directory is just a special file and it is present in a directory
+        // $pos - the position of the last slash
+         
+        
+        // escaping is required for Windows since it uses '\' in directory paths
+        // for Linux, we can simply leave it alone
+        if (PHP_OS_FAMILY == 'Windows')
+          $WINDOWS = true;
+        
+        $path = substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']));
+        
+        if ($WINDOWS) 
+          $pos = strrpos($path, '\\');
+        else 
+          $pos = strrpos($path, '/');
+        
+        $dir_name = substr($path, $pos+1);
+        $parent_dir = substr($path, 0, $pos);
+        
+        if ($WINDOWS) {
+          $escaped_path = addcslashes($path, '\\');
+          $escaped_parent_dir = addcslashes($parent_dir, '\\');
+        }
+        else {
+          $escaped_path = $path;
+          $escaped_parent_dir = $parent_dir;
+        }
+        
+		    echo $path;
       ?>
     </title>
   </head>
@@ -19,11 +45,14 @@
   <body>
     <h1>
       <?php
-	    echo $full_path;
-		if ($full_path != "\project\sem4") {
-			$mod_directory = str_replace("\\\\", "/", $directory);
-			echo "<a class='up' href='$mod_directory'>&uarr;</a>";
-		}
+        if ($path == "/project/sem4" || $path == "\project\sem4")
+          echo "Home";
+        else {
+	        echo $path;
+          // Since Linux directory path will not have backslashes, there is no issue
+ 			    $parent_dir_link = str_replace("\\\\", "/", $escaped_parent_dir);
+			    echo "<a class='up' href='$parent_dir_link'>&uarr;</a>";
+		    }
       ?>
     </h1>
      
@@ -33,98 +62,103 @@
         $USER_TABLE = "user";
         $FILE_TABLE = "file";
         $doclink = "/project/document.png";
-		$folderlink = "/project/folder.png";
+		    $folderlink = "/project/folder.png";
         $filelink = "/project/file.png";
 
         $mysqli = new mysqli("localhost", "root", "", "project");
-        $res = $mysqli->query("SELECT * from file where dir=1 and filename='".$folder_name."' and path='".$directory."'");
-		
-		$tlimit = $res->num_rows;
-		if ($tlimit != 0)
-		  $templist = $res->fetch_all(MYSQLI_NUM);
-		
-        if (($tlimit == 0) || ($templist[0][3] == 0)) {
-          $mysqli->query("INSERT INTO file values('$folder_name', '$directory', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
+        $result = $mysqli->query("SELECT * from file where dir=1 and filename='".$dir_name."' and path='".$escaped_parent_dir."'");
+		    
+        // We follow the convention: $file_list is retrieved by scandir or from dba_close
+        // $new_list is formed and has the required info to display in the page
+		    if ($result->num_rows != 0)
+		      $templist = $result->fetch_all(MYSQLI_ASSOC);
+		    
+        // In case the directory has not been inserted or indexed, we need to do that
+        if (($result->num_rows == 0) || ($templist[0]['indexed'] == 0)) {
+          $mysqli->query("INSERT INTO file values('$dir_name', '$escaped_parent_dir', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
 
-          $list = scandir(".", 1);
-          $listsize = count($list);
+          $file_list = scandir(".", 1);
+          $file_list_size = count($file_list);
 
-          $newlist = array();
-          $nlindex = 0;
+          $new_list = array();
+          $new_list_size = 0;
 
-          $filelist = array();
-          $fileindex = 0;
-
-          for ($i = 0; $i < $listsize; $i++) {
-            if (! ((preg_match('/.php/i', $list[$i])) || (is_dir($list[$i])))) {
-              if ( preg_match('/.jpeg/i', $list[$i]) ||
-                   preg_match('/.jpg/i', $list[$i]) ||
-                   preg_match('/.png/i', $list[$i]) ||
-                   preg_match('/.webp/i', $list[$i]) ||
-                   preg_match('/.gif/i', $list[$i]) ||
-                   preg_match('/.bmp/i', $list[$i])
+          for ($i = 0; $i < $file_list_size; $i++) {
+            if (! ((preg_match('/.php/i', $file_list[$i])) || (is_dir($file_list[$i])))) {
+              if ( preg_match('/.jpeg/i', $file_list[$i]) ||
+                   preg_match('/.jpg/i', $file_list[$i]) ||
+                   preg_match('/.png/i', $file_list[$i]) ||
+                   preg_match('/.webp/i', $file_list[$i]) ||
+                   preg_match('/.gif/i', $file_list[$i]) ||
+                   preg_match('/.bmp/i', $file_list[$i])
                  ) {
-                   $ftype = "IMG";
-                   $ffile = $list[$i];
+                $ftype = "IMG";
+                $file_image = $file_list[$i];
               }
 
-              else if ( preg_match('/.pdf/i', $list[$i]) || 
-			            preg_match('/.doc/i', $list[$i]) ||
-	                    preg_match('/.docx/i', $list[$i])
+              else if ( preg_match('/.pdf/i', $file_list[$i]) || 
+       			            preg_match('/.doc/i', $file_list[$i]) ||
+	                    preg_match('/.docx/i', $file_list[$i])
                       ) {
-                        $ftype = "DOC";
-                        $ffile = $doclink;
+                $ftype = "DOC";
+                $file_image = $doclink;
               }
 
               else {
                 $ftype = "FIL";
-                $ffile = $filelink;
+                $file_image = $filelink;
               }
-
-            $filelist[$fileindex] = array($list[$i], $ftype, $ffile);
-            $fileindex++;
-            $mysqli->query("INSERT INTO file values('$list[$i]', '$escaped_full_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
+              
+              $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
+              $new_list_size++;
+              $mysqli->query("INSERT INTO file values('$file_list[$i]', '$escaped_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
             }
 
-            else if (is_dir($list[$i])) {
-              if (! (($list[$i] == ".") || ($list[$i] == "..") || (preg_match('/_files/i', $list[$i])))) {	  
-                $newlist[$nlindex] = array($list[$i], "dir", $folderlink);
-	            $nlindex++;
-	            $mysqli->query("INSERT INTO file values('$list[$i]', '$escaped_full_path', 1, 0, 'DIR', CURRENT_TIMESTAMP(), 'Pub')");	
-				copy("index.php", $list[$i].'\\'."index.php");	// Replicate index.php in subdirectory
+            else if (is_dir($file_list[$i])) {
+              if (! (($file_list[$i] == ".") || ($file_list[$i] == "..") || (preg_match('/_files/i', $file_list[$i])))) {	  
+                $ftype = "DIR";
+                $file_image = $folderlink;
+                
+                // Replicated because we do NOT want to add . or .. to the list
+                // I found that out the hard way by cleverly putting this only once
+                // as the last line of the loop
+	              $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
+                $new_list_size++;
+             
+	              $mysqli->query("INSERT INTO file values('$file_list[$i]', '$escaped_path', 1, 0, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	
+				        // Replicate index.php in sub-directory
+                if ($WINDOWS)
+                  copy("index.php", $file_list[$i].'\\'."index.php");	
+                else
+                  copy("index.php", $file_list[$i].'/'."index.php");
               }
             }
           }
-
-          $newlist = array_merge($newlist, $filelist);
-          $nlindex = count($newlist);
         }
 
         else {
-          $qres = $mysqli->query("SELECT * from file where path='$escaped_full_path'");
-          $templist = $qres->fetch_all(MYSQLI_NUM);
-          $nlindex = $qres->num_rows;
-          $newlist = array();
+          $result = $mysqli->query("SELECT * from file where path='$escaped_path'");
+          $file_list = $result->fetch_all(MYSQLI_ASSOC);
+          $file_list_size = $new_list_size = $result->num_rows;
+          $new_list = array();
 
-          for($i = 0; $i < $nlindex; $i++) {
-            if($templist[$i][4] == "IMG")
-              $templist[$i][4] = $templist[$i][0];
-            else if ($templist[$i][4] == "DOC")
-              $templist[$i][4] = $doclink;
-            else if ($templist[$i][4] == "DIR")
-              $templist[$i][4] = $folderlink;
+          for($i = 0; $i < $new_list_size; $i++) {
+            if($file_list[$i]['type'] == "IMG")
+              $new_list[$i] = array("name" => $file_list[$i]['filename'], "image" => $file_list[$i]['filename']);
+            else if ($file_list[$i]['type'] == "DOC")
+              $new_list[$i] = array("name" => $file_list[$i]['filename'], "image" => $doclink);
+            else if ($file_list[$i]['type'] == "DIR")
+              $new_list[$i] = array("name" => $file_list[$i]['filename'], "image" => $folderlink);
             else
-              $templist[$i][4] = $filelink;
-
-            $newlist[$i] = array($templist[$i][0], $templist[$i][4], $templist[$i][4]);
+              $new_list[$i] = array("name" => $file_list[$i]['filename'], "image" => $filelink);
           }		       
         }
 	 
-        for ($i = 0; $i < $nlindex; $i++) {
+        for ($i = 0; $i < $new_list_size; $i++) {
           echo "<div class='item'>";
-          echo '<a href="'.$newlist[$i][0].'">';
-          echo '<figure>'.'<img src="'.$newlist[$i][2].'"'.'>';
-          echo '<figcaption>'.$newlist[$i][0].'</figcaption>';
+          echo '<a href="'.$new_list[$i]['name'].'">';
+          echo '<figure>'.'<img src="'.$new_list[$i]['image'].'"'.'>';
+          echo '<figcaption>'.$new_list[$i]['name'].'</figcaption>';
           echo '</figure>'.'</a>';
           echo "</div>";
         }

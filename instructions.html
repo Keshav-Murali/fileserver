@@ -11,21 +11,23 @@
 
   <body>
     <h1>How to set this up</h1>
-	<ol>
-	  <li>Install XAMPP</li>
-	  <li>Create folder project in htdocs and download the <a href="https://github.com/Keshav-Murali/fileserver/">git repository</a> there</li>
-	  <li>Open phpmyadmin, copy-paste the <em>DB, Table creation</em> code into the SQL tab</li>
-	  <li>Reqd files: in project folder: sem4 folder, style.css, portabledoc.png, file.png, folder.png, document.png, question.png</li>
-	  <li>Set up all your files under the sem4 folder - this folder MUST contain index.php</li>
+  <ol>
+    <li>Install XAMPP</li>
+    <li>Create folder project in htdocs and download the <a href="https://github.com/Keshav-Murali/fileserver/">git repository</a> there</li>
+    <li>Open phpmyadmin, copy-paste the <em>DB, Table creation</em> code into the SQL tab</li>
+    <li>Reqd files: in project folder: sem4 folder, style.css, portabledoc.png, file.png, folder.png, document.png, question.png</li>
+    <li>Set up all your files under the sem4 folder - this folder MUST contain index.php</li>
       <li>Note: sem4 can have directories and subdirectories, and it is not necessary to manually place index.php in these folders</li>
-	  <li>Then you can start up apache+mysql from XAMPP control panel and view the files by localhost/project/sem4</li>
-	  <li>Limitations: You CANNOT have .php files in any of the directories</li>
-	</ol>
+    <li>Then you can start up apache+mysql from XAMPP control panel and view the files by localhost/project/sem4</li>
+    <li>Limitations: You CANNOT have .php files in any of the directories</li>
+    <li>Warning: for now untested on Linux</li>
+    <li>Warning 2: tested only with PHP7</li>
+  </ol>
     <h1>DB, Table creation</h1>
     <pre>
       <code>
-	CREATE DATABASE project;
-	USE project;
+  CREATE DATABASE project;
+  USE project;
         CREATE TABLE user(username varchar(30) PRIMARY KEY, password varchar(30), permission varchar(5), applied boolean, req_perm varchar(5));
         CREATE TABLE file(filename varchar(255), path varchar(255), dir boolean, indexed boolean, type varchar(3), datetime timestamp, class varchar(3), PRIMARY KEY(filename, path, dir));
         /*
@@ -38,29 +40,33 @@
     <h1>DB, Table deletion</h1>
     <pre>
       <code>
-	DROP TABLE user;
-	DROP TABLE file;
-	DROP DATABASE project;
+  DROP TABLE user;
+  DROP TABLE file;
+  DROP DATABASE project;
       </code>
     </pre>
 
     <h2>Alternate</h2>
     <pre>
       <code>
-	TRUNCATE user;
-	TRUNCATE file;
+  TRUNCATE user;
+  TRUNCATE file;
       </code>
     </pre>
     
     <h1>TO DO</h1>
     <ul>
-	  <li>login</li>
+      <li>login</li>
+      <li>If only 1 login.php -> then need to redirect after logging in</li>
       <li>admin tools</li>
       <li>request for admin</li>
       <li>upload files</li>
-	  <li>create folder</li>
-	  <li>replicate index.php when create folder from the web interface</li>
+      <li>create folder</li>
+      <li>replicate index.php when create folder from the web interface</li>
       <li>rescan</li>
+      <li>Redo schema to support adding file types?</li>
+      <li>At some point make a php file with all required constants</li>
+      <li>Example is the "home path" i.e. /project and the picture links</li>
     </ul>
   </body>
   
