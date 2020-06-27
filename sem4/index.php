@@ -6,13 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
       <?php
+        // config.php has most of the constants that are required
+        // Examples: Database, relation details, image links
+        require 'config.php';
+        
         // $path - the path of the directory in which index.php resides
         // $dir_name - the name of the above mentioned directory
         // $parent_dir - the directory which contains the above mentioned directory
         // This is because a directory is just a special file and it is present in a directory
         // $pos - the position of the last slash
          
-        
         // escaping is required for Windows since it uses '\' in directory paths
         // for Linux, we can simply leave it alone
         if (PHP_OS_FAMILY == 'Windows')
@@ -55,18 +58,11 @@
 		    }
       ?>
     </h1>
-     
+    
     <div class="wrapper">
       <?php
-        $DB_NAME = "project";
-        $USER_TABLE = "user";
-        $FILE_TABLE = "file";
-        $doclink = "/project/document.png";
-		    $folderlink = "/project/folder.png";
-        $filelink = "/project/file.png";
-
-        $mysqli = new mysqli("localhost", "root", "", "project");
-        $result = $mysqli->query("SELECT * from file where dir=1 and filename='".$dir_name."' and path='".$escaped_parent_dir."'");
+        $mysqli = new mysqli("localhost", $DB_USER, $DB_PASS, $DB_NAME);
+        $result = $mysqli->query("SELECT * from $FILE_TABLE where dir=1 and filename='".$dir_name."' and path='".$escaped_parent_dir."'");
 		    
         // We follow the convention: $file_list is retrieved by scandir or from dba_close
         // $new_list is formed and has the required info to display in the page
@@ -75,7 +71,7 @@
 		    
         // In case the directory has not been inserted or indexed, we need to do that
         if (($result->num_rows == 0) || ($templist[0]['indexed'] == 0)) {
-          $mysqli->query("INSERT INTO file values('$dir_name', '$escaped_parent_dir', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
+          $mysqli->query("INSERT INTO $FILE_TABLE values('$dir_name', '$escaped_parent_dir', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
 
           $file_list = scandir(".", 1);
           $file_list_size = count($file_list);
@@ -98,7 +94,7 @@
 
               else if ( preg_match('/.pdf/i', $file_list[$i]) || 
        			            preg_match('/.doc/i', $file_list[$i]) ||
-	                    preg_match('/.docx/i', $file_list[$i])
+	                      preg_match('/.docx/i', $file_list[$i])
                       ) {
                 $ftype = "DOC";
                 $file_image = $doclink;
@@ -111,7 +107,7 @@
               
               $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
               $new_list_size++;
-              $mysqli->query("INSERT INTO file values('$file_list[$i]', '$escaped_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
+              $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
             }
 
             else if (is_dir($file_list[$i])) {
@@ -125,7 +121,7 @@
 	              $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
                 $new_list_size++;
              
-	              $mysqli->query("INSERT INTO file values('$file_list[$i]', '$escaped_path', 1, 0, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	
+	              $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 1, 0, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	
 				        // Replicate index.php in sub-directory
                 if ($WINDOWS)
                   copy("index.php", $file_list[$i].'\\'."index.php");	
@@ -137,7 +133,7 @@
         }
 
         else {
-          $result = $mysqli->query("SELECT * from file where path='$escaped_path'");
+          $result = $mysqli->query("SELECT * from $FILE_TABLE where path='$escaped_path'");
           $file_list = $result->fetch_all(MYSQLI_ASSOC);
           $file_list_size = $new_list_size = $result->num_rows;
           $new_list = array();
