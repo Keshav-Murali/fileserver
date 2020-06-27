@@ -1,23 +1,82 @@
+* {
+  box-sizing: border-box;
+}
+
 div.wrapper {
     display: grid;
     grid-template-columns: 100%;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+div.overlay {
+  position: absolute;
+  background-color: rgba(0,0,0,1);
+  z-index: +6;
+  width: 100%;
+  height: 100%;
+  display: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+div.overlay form {
+  background-color: lightgray;
+  display: none;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 20%;
+  max-height: 50%;
+  visibility:hidden;
+  border: 0.25em solid gray;
+}
+
+input[type="text"], label {
+  width: 100%;
+}
+
+legend {
+  font-weight: bold;
+}
+
+label.error {
+  color: red;
 }
 
 @media screen and (min-width: 300px) {
   div.wrapper {
       grid-template-columns: 50% 50%;
   }
+  
+  div.overlay form {
+    width: 90%;
+  }
+  
 }
 
 @media screen and (min-width: 600px) {
   div.wrapper {
       grid-template-columns: 33% 33% 33%;
   }
+  
+  div.overlay form {
+    width: 75%;
+  }
 }
 
 @media screen and (min-width: 800px) {
   div.wrapper {
       grid-template-columns: 25% 25% 25% 25%;
+  }
+  
+  div.overlay form {
+    width: 50%;
   }
 }
 
@@ -26,11 +85,19 @@ div.wrapper {
   div.wrapper {
       grid-template-columns: 20% 20% 20% 20% 20%;
   }
+  
+  div.overlay form {
+    width: 40%;
+  }
 }
 
 @media screen and (min-width: 1500px) {
   div.wrapper {
       grid-template-columns: 16.66% 16.66% 16.66% 16.66% 16.66% 16.66%;
+  }
+  
+  div.overlay form {
+    width: 30%;
   }
 }
 
@@ -38,6 +105,10 @@ a.up {
 	text-decoration: none;
 }
 
+div.func {
+  word-wrap: break-word;
+  text-align: center;
+}
 
 div.item {
     border: 1px solid black;
