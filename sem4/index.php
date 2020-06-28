@@ -104,8 +104,7 @@
       
       else {
         /*
-        Idea - traverse directory and subdirectories recursively using MYSQL queries
-        Steps:
+        Idea:
         let current_dir = path[SLASH]dir_name obtained from the form
         del_recursive(current_dir):
         1) Get a list of files and a list of directories whose path = current_dir
@@ -144,24 +143,64 @@
         }
         
         del_recursive($path, $del_file_name, $fs_root, $mysqli);
+        /* If there are arise any issues, it'll certainly be related to whitespace. Will check soon */
       }   
-    } 
-  }
+    }
     
+    else if (isset($_POST['rename_form'])) {
+      $ren_old_name = $_POST['ren_old_file_name'];
+      $ren_new_name = $_POST['ren_file_name'];
+      $ren_file_type = $_POST['ren_file_type'];
+      
+      if ($ren_file_type == "file") {
+        rename($fs_root.$path.DIRECTORY_SEPARATOR.$ren_old_name, $fs_root.$path.DIRECTORY_SEPARATOR.$ren_new_name);
+        $mysqli->query("UPDATE $FILE_TABLE SET filename='$ren_new_name' WHERE filename='$ren_old_name' AND path='$escaped_path' and dir=0");	
+      }
+      
+      else {
     /* 
-      for rename:
-      if file:
-        rename, update db
-      if dir:
-         form a string -> that directory's relative path (escaped_path?)
-         0) rename the folder, in both DB and file system
-         old_full = path + old_name, new_full = path + new_name
-         recursive_proc(old_full, new_full):
-           1) get list of files and list of dirs in the dir
-           2) update the file paths to new_full
-           3) recurse on every dir in the list of dirs, old_full[slash]dir_name, updated_full[slash]dir_name
-           4) update the folder paths to new_full
-    */      
+      Idea:
+       old_path = path + old_dir_name, new_path = path + new_dir_name;
+       ren_recursive(old_path, new_path):
+       1) get list of dirs in the dir
+       2) update the file and folder paths to new_path
+       3) recurse on every dir in the list of dirs, old_path[slash]dir_name, new_path[slash]dir_name
+       
+       update the folder name to new_name
+    */    
+        $old_path = $escaped_path.(str_replace("\\", "\\\\", DIRECTORY_SEPARATOR)).$ren_old_name;
+        $new_path = $escaped_path.(str_replace("\\", "\\\\", DIRECTORY_SEPARATOR)).$ren_new_name;
+        
+        if(!function_exists('ren_recursive')) {
+          function ren_recursive($old_path, $new_path, $mysqli) {
+            require 'config.php';
+            
+            $dir_query = $mysqli->query("SELECT filename from $FILE_TABLE WHERE dir=1 and path='$old_path'");
+            $directories = $dir_query->fetch_all(MYSQLI_ASSOC);
+            
+            // Adjust files and folders all at once
+            $mysqli->query("UPDATE $FILE_TABLE set path='$new_path' WHERE path='$old_path'");	
+
+            // Recursively adjust subdirectories - remember that these don't require renaming
+            foreach($directories as $value) {
+              $old_path = $old_path.(str_replace("\\", "\\\\", DIRECTORY_SEPARATOR));
+              $new_path = $new_path.(str_replace("\\", "\\\\", DIRECTORY_SEPARATOR));
+              ren_recursive($old_path.$value['filename'],$new_path.$value['filename'] , $mysqli);
+            }
+          }
+        }
+        
+        ren_recursive($old_path, $new_path, $mysqli); 
+        
+        //Finally, rename the directory in both the file system and the database
+        $mysqli->query("UPDATE $FILE_TABLE set filename='$ren_new_name' where path='$escaped_path' AND filename='$ren_old_name' AND dir = 1");
+        rename($fs_root.$path.DIRECTORY_SEPARATOR.$ren_old_name, $fs_root.$path.DIRECTORY_SEPARATOR.$ren_new_name);
+        
+        /* If there are arise any issues, it'll certainly be related to whitespace. Will check soon */
+      }
+    }
+  }
+          
 ?>
 
 <html>
@@ -305,7 +344,7 @@
         for ($i = 0; $i < $new_list_size; $i++) {
           echo "<div class='item'>";
           echo '<a href="'.$new_list[$i]['name'].'">';
-          echo '<figure>'.'<img src ="'.$new_list[$i]['image'].'"'."id='i$i'".'>';
+          echo '<figure>'.'<img src ="'.$new_list[$i]['image'].'"'."id='i$i'".' />';
           echo "<figcaption id='n$i'>".$new_list[$i]['name'].'</figcaption>';
           echo '</figure>'.'</a>';
           echo "<span class='del_pointer' onclick='delForm($i)'>"."&check;"."</span> ";
@@ -316,9 +355,10 @@
     </div>
 
     <script type="text/javascript">
+    // Needed for client side validation of forms
        var fileList = <?php echo json_encode($js_file_list); ?>;
        var dirList = <?php echo json_encode($js_dir_list); ?>;
-     </script>
+    </script>
   </body>
 </html>
 

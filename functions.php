@@ -3,7 +3,7 @@
     echo '<div class="func"><button type="button" onclick="displayForm(0)">Create folder</button></div>';
     echo '<div class="func"><button type="button" onclick="displayForm(1)">Upload file</button></div>';
     echo '<div class="func"><button type="button" onclick="displayChoice(0)">Delete</button></div>';
-    echo '<div class="func"><button type="button" onclick="displayChoice(1)">Rename - not done</button></div>';
+    echo '<div class="func"><button type="button" onclick="displayChoice(1)">Rename</button></div>';
   ?>
 </div>
 
@@ -61,9 +61,27 @@
     <button type="button" onclick="closeOverlay(this)">Close</button>
   </form>
 
-  <form id="rename_form" class="function_form" action="" method="POST">
-  <input type="text" name="file_name"></input>
-  <input type="checkbox" name="folder"></input>
+  <form id="rename_form" class="function_form" action="" method="POST" onsubmit="return validateRenameForm(this)">
+  <fieldset>
+      <legend>Rename</legend>
+      <table>
+        <tr>
+          <td><label>Selected file</label></td>
+          <td><input type="text" name="ren_old_file_name" id="ren_old_file_name" readonly /></td>
+        </tr>
+        <tr>
+          <td><label for="ren_file_name">New Name - no extension!</label></td>
+          <td><input type="text" id="ren_file_name" name="ren_file_name" required /></td>
+        </tr>
+        <tr>
+          <td><label>Type</label></td>
+          <td><input type="text" id="ren_file_type" name="ren_file_type" readonly></td>
+        </tr>
+      </table>
+    </fieldset>
+    <label class="error" id="ren_form_error"></label><br>
+    <button type="submit" name="rename_form" action="">Confirm</button>
+    <button type="button" onclick="closeOverlay(this)">Close</button>
   </form>
 </div>
 

@@ -121,6 +121,75 @@ function delForm(num)
 
 function renForm(num)
 {
-  displayChoice(0);
-  alert("Renaming has not been implemented yet");
+  displayChoice(1);
+  overlay = document.getElementById("overlay");
+  overlay.style.display = "block";
+  
+  var nameobj = document.getElementById('n' + num);
+  var imgobj = document.getElementById('i' + num);
+  
+  var name = nameobj.innerHTML;
+  var img = imgobj.src;
+  
+  elt = document.getElementById("rename_form");
+  elt.style.display="inline-block";
+  elt.style.visibility="visible";
+  
+  name_elt = document.getElementById("ren_old_file_name");
+  type_elt = document.getElementById("ren_file_type");
+  
+  name_elt.value=name;
+  
+  var error = document.getElementById("ren_form_error");
+  error.innerHTML = "";
+  
+  if (img.indexOf("folder.png") == -1)
+    type_elt.value = "file";
+  else
+    type_elt.value = "folder";
+}
+
+function validateRenameForm(obj) {
+  var elt1 = document.getElementById("ren_old_file_name");
+  var elt2 = document.getElementById("ren_file_type");
+  var elt3 = document.getElementById("ren_file_name");
+  
+  var old_file_name = elt1.value;
+  var file_type = elt2.value;
+  var new_file_name = elt3.value;
+    
+  var error = document.getElementById("ren_form_error");
+  var pos = old_file_name.lastIndexOf(".");
+  
+  if (pos != -1)
+    var ext = old_file_name.substring(pos);
+  else
+    var ext = null;
+  
+  new_pos = new_file_name.lastIndexOf(".");
+  
+  if (new_pos != -1) {
+    error.innerHTML = "Don't use extensions in your file name!";
+    return false;
+  }
+  
+  if (pos != -1) {
+    new_file_name = new_file_name + ext;
+    elt3.value = new_file_name;
+  }
+  
+  if (file_type == "file") {
+    if (fileList.includes(new_file_name)) {
+      error.innerHTML = "A file with that name is already present!";
+      return false;
+    }
+  }
+  
+  else if (file_type == "folder") {
+    if (dirList.includes(new_file_name)) {
+      error.innerHTML = "A directory with that name is already present!";
+      return false;
+    }
+  }
+  return true;
 }

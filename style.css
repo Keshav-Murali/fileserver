@@ -37,7 +37,7 @@ div.overlay form {
   border: 0.25em solid gray;
 }
 
-input[type="text"], label {
+input[type="text"], label, input[type="file"] {
   width: 100%;
 }
 
