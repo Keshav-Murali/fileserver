@@ -10,7 +10,7 @@ div.wrapper {
 }
 
 div.overlay {
-  position: absolute;
+  position: fixed;
   background-color: rgba(0,0,0,1);
   z-index: +6;
   width: 100%;
@@ -47,6 +47,20 @@ legend {
 
 label.error {
   color: red;
+}
+
+span.del_pointer {
+  color: red;
+  cursor: pointer;
+  display:none;
+  font-size: 2em;
+}
+
+span.ren_pointer {
+  color: green;
+  cursor: pointer;
+  font-size: 2em;
+  display:none;
 }
 
 @media screen and (min-width: 300px) {

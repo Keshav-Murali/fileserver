@@ -68,3 +68,59 @@ function validateFileForm(v) {
   }  
     return true;
 }
+
+
+function displayChoice(num) {
+  if (num == 1) {
+    arr = document.getElementsByClassName('ren_pointer');
+    other = document.getElementsByClassName('del_pointer');
+  }
+  else if (num == 0) {
+    arr = document.getElementsByClassName('del_pointer');
+    other = document.getElementsByClassName('ren_pointer');
+  }
+  for (elt of other) {
+    elt.style.display = "none";
+  }
+  for (elt of arr) {
+    if (elt.style.display == "none")
+      elt.style.display = "inline-block"; 
+    else
+      elt.style.display = "none";
+  }
+}
+
+
+function delForm(num)
+{
+  displayChoice(0);
+  
+  overlay = document.getElementById("overlay");
+  overlay.style.display = "block";
+  
+  var nameobj = document.getElementById('n' + num);
+  var imgobj = document.getElementById('i' + num);
+  
+  var name = nameobj.innerHTML;
+  var img = imgobj.src;
+  
+  elt = document.getElementById("delete_form");
+  elt.style.display="inline-block";
+  elt.style.visibility="visible";
+  
+  name_elt = document.getElementById("del_file_name");
+  type_elt = document.getElementById("del_file_type");
+  
+  name_elt.value=name;
+  
+  if (img.indexOf("folder.png") == -1)
+    type_elt.value = "file";
+  else
+    type_elt.value = "folder";
+}
+
+function renForm(num)
+{
+  displayChoice(0);
+  alert("Renaming has not been implemented yet");
+}

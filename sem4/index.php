@@ -11,6 +11,8 @@
   $mysqli = new mysqli("localhost", $DB_USER, $DB_PASS, $DB_NAME);
   
   // $path - the path of the directory in which index.php resides
+  // $fs_root - document root but will use the correct slash for the Operating System
+  // Required for deletion/renaming
   // $dir_name - the name of the above mentioned directory
   // $parent_dir - the directory which contains the above mentioned directory
   // This is because a directory is just a special file and it is present in a directory
@@ -22,7 +24,8 @@
     $WINDOWS = true;
   
   $path = substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']));
-  
+  $fs_root = substr(__DIR__, 0, strlen($_SERVER['DOCUMENT_ROOT']));
+
   if ($WINDOWS) 
     $pos = strrpos($path, '\\');
   else 
@@ -55,6 +58,7 @@
     }
     
     else if (isset($_POST['file_form'])) {
+      // If the file did not require renaming
       if ($_POST['file_name'] != '') 
         $file_name = $_POST['file_name'];
       else 
@@ -62,6 +66,8 @@
       
       $upload_file_path = getcwd().DIRECTORY_SEPARATOR.$file_name;
       move_uploaded_file($_FILES['file']['tmp_name'], $upload_file_path);
+      
+      // Yes, yes code duplication, I'll solve it some day, I promise
       if ( preg_match('/.jpeg/i', $file_name) ||
            preg_match('/.jpg/i', $file_name) ||
            preg_match('/.png/i', $file_name) ||
@@ -86,7 +92,76 @@
       $mysqli->query("INSERT INTO $FILE_TABLE values('$file_name','$escaped_path', 0, 1, '$type', CURRENT_TIMESTAMP(), 'Pub')");	
 
       }
-    }    
+      
+    else if (isset($_POST['delete_form'])) {
+      $del_file_name = $_POST['del_file_name'];
+      $del_file_type = $_POST['del_file_type'];
+      
+      if ($del_file_type == "file") {
+        unlink($fs_root.$path.DIRECTORY_SEPARATOR.$del_file_name);
+        $mysqli->query("DELETE FROM $FILE_TABLE WHERE filename='$del_file_name' AND path='$escaped_path' and dir=0");	
+      }
+      
+      else {
+        /*
+        Idea - traverse directory and subdirectories recursively using MYSQL queries
+        Steps:
+        let current_dir = path[SLASH]dir_name obtained from the form
+        del_recursive(current_dir):
+        1) Get a list of files and a list of directories whose path = current_dir
+        2) Unlink the files, remove from DB
+        3) for each dir in list del_recursive(current_dir[slash]dir)
+        4) delete current_dir using rmdir as well as in DB       
+        */
+                
+        if(!function_exists('del_recursive')) {
+          function del_recursive($original_dir, $current_name, $fs_root, $mysqli) {
+            require 'config.php';
+            $escaped_original_dir = str_replace("\\", "\\\\", $original_dir);
+            $current_dir = $original_dir.DIRECTORY_SEPARATOR.$current_name;
+            $escaped_current_dir = str_replace("\\", "\\\\", $current_dir);
+            
+            $file_query = $mysqli->query("SELECT filename from $FILE_TABLE WHERE dir=0 AND path = '$escaped_current_dir'");
+            $files = $file_query->fetch_all(MYSQLI_ASSOC);
+            $dir_query = $mysqli->query("SELECT filename from $FILE_TABLE WHERE dir=1 and path = '$escaped_current_dir'");
+            $directories = $dir_query->fetch_all(MYSQLI_ASSOC);
+            
+            foreach($files as $value) {
+              unlink($fs_root.$current_dir.DIRECTORY_SEPARATOR.$value['filename']);
+            }
+            
+            // Delete files all at once
+            $mysqli->query("DELETE FROM $FILE_TABLE WHERE path='$escaped_current_dir' AND dir=0");	
+
+            foreach($directories as $value) {
+              del_recursive($current_dir, $value['filename'], $fs_root, $mysqli);
+            }
+            // Delete current folder - but not before getting rid of the pesky index.php
+            unlink($fs_root.$current_dir.DIRECTORY_SEPARATOR."index.php");
+            rmdir($fs_root.$current_dir);
+            $mysqli->query("DELETE FROM $FILE_TABLE WHERE filename='".$current_name."' AND path='".$escaped_original_dir."' AND dir=1");
+          }
+        }
+        
+        del_recursive($path, $del_file_name, $fs_root, $mysqli);
+      }   
+    } 
+  }
+    
+    /* 
+      for rename:
+      if file:
+        rename, update db
+      if dir:
+         form a string -> that directory's relative path (escaped_path?)
+         0) rename the folder, in both DB and file system
+         old_full = path + old_name, new_full = path + new_name
+         recursive_proc(old_full, new_full):
+           1) get list of files and list of dirs in the dir
+           2) update the file paths to new_full
+           3) recurse on every dir in the list of dirs, old_full[slash]dir_name, updated_full[slash]dir_name
+           4) update the folder paths to new_full
+    */      
 ?>
 
 <html>
@@ -230,9 +305,11 @@
         for ($i = 0; $i < $new_list_size; $i++) {
           echo "<div class='item'>";
           echo '<a href="'.$new_list[$i]['name'].'">';
-          echo '<figure>'.'<img src="'.$new_list[$i]['image'].'"'.'>';
-          echo '<figcaption>'.$new_list[$i]['name'].'</figcaption>';
+          echo '<figure>'.'<img src ="'.$new_list[$i]['image'].'"'."id='i$i'".'>';
+          echo "<figcaption id='n$i'>".$new_list[$i]['name'].'</figcaption>';
           echo '</figure>'.'</a>';
+          echo "<span class='del_pointer' onclick='delForm($i)'>"."&check;"."</span> ";
+          echo "<span class='ren_pointer' onclick='renForm($i)'>"."&check;"."</span>";
           echo "</div>";
         }
       ?>
