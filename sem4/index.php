@@ -206,7 +206,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="/project/style.css">
-    <script src="/project/functions.js"></script>
+    <script src="/project/forms.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
       <?php
@@ -230,7 +230,7 @@
     </h1>
     
     <?php 
-      require 'functions.php';
+      require 'forms.php';
     ?>
     
     <div class="wrapper">
