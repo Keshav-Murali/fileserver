@@ -37,6 +37,7 @@ div.overlay form {
   border: 0.25em solid gray;
 }
 
+/* Without this, file kept overflowing the form */
 input[type="text"], label, input[type="file"] {
   width: 100%;
 }

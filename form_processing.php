@@ -23,31 +23,11 @@
       $upload_file_path = getcwd().DIRECTORY_SEPARATOR.$file_name;
       move_uploaded_file($_FILES['file']['tmp_name'], $upload_file_path);
       
-      // Yes, yes code duplication, I'll solve it some day, I promise
-      if ( preg_match('/.jpeg/i', $file_name) ||
-           preg_match('/.jpg/i', $file_name) ||
-           preg_match('/.png/i', $file_name) ||
-           preg_match('/.webp/i', $file_name) ||
-           preg_match('/.gif/i', $file_name) ||
-           preg_match('/.bmp/i', $file_name)
-          ) {
-        $type = "IMG";
-      }
-
-      else if ( preg_match('/.pdf/i', $file_name) || 
-                preg_match('/.doc/i', $file_name) ||
-                preg_match('/.docx/i', $file_name)
-              ) {
-        $type = "DOC";
-      }
-
-      else {
-        $type = "FIL";
-      }
+      $type = return_file_type($file_name);
     
       $mysqli->query("INSERT INTO $FILE_TABLE values('$file_name','$escaped_path', 0, 1, '$type', CURRENT_TIMESTAMP(), 'Pub')");	
 
-      }
+    }
       
     else if (isset($_POST['delete_form'])) {
       $del_file_name = $_POST['del_file_name'];
