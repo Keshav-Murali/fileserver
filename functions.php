@@ -20,6 +20,59 @@
       return "FIL";
   }
   
+  // if $original is true, then we need to set the referenced variables - otherwise, we ignore them
+  function scan_dir_recursive($parent_dir, $dir_name, $mysqli, &$js_file_list, &$js_dir_list, &$new_list, $original) {
+    global $FILE_TABLE, $fs_root, $folderlink;
+    $path = $parent_dir.DIRECTORY_SEPARATOR.$dir_name;
+    $escaped_parent_dir = str_replace("\\", "\\\\", $parent_dir);
+    $escaped_path = str_replace("\\", "\\\\", $path);
+
+    $mysqli->query("INSERT INTO $FILE_TABLE values('$dir_name', '$escaped_parent_dir', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
+
+    $file_list = scandir($fs_root.$path);
+    $file_list_size = count($file_list);
+    $new_list_size = 0;
+
+    for ($i = 0; $i < $file_list_size; $i++) {
+      if (! ((preg_match('/index.php/i', $file_list[$i])) || (is_dir($file_list[$i])))) {
+        $ftype = return_file_type($file_list[$i]);
+        $file_image = return_img_link($file_list[$i], $ftype);
+        $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
+
+        if ($original) {
+          array_push($js_file_list, $file_list[$i]);
+          $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
+          $new_list_size++;
+        }
+      }
+
+      else if (is_dir($file_list[$i])) {
+        // We want to prevent . and .. as folder names as well
+        if ($original)
+          array_push($js_dir_list, $file_list[$i]);
+        
+        if (! (($file_list[$i] == ".") || ($file_list[$i] == "..") || (preg_match('/_files/i', $file_list[$i])))) {	  
+          $ftype = "DIR";
+          
+          if ($original) {
+            $file_image = $folderlink;
+            // Replicated because we do NOT want to add . or .. to the list
+            // I found that out the hard way by cleverly putting this only once
+            // as the last line of the loop
+            $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
+            $new_list_size++;
+          }
+       
+          $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 1, 0, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	
+          // Replicate index.php in sub-directory
+          copy("index.php", $file_list[$i].DIRECTORY_SEPARATOR."index.php");
+          // Recursively index subdirectory
+          scan_dir_recursive($path, $file_list[$i], $mysqli, $js_file_list, $js_dir_list, $new_list, FALSE);          
+        }
+      }
+    }
+  }
+  
   /*
     Idea:
     let current_dir = path[SLASH]dir_name obtained from the form
@@ -83,4 +136,3 @@
       ren_recursive($old_slashed_path.$value['filename'],$new_slashed_path.$value['filename'] , $mysqli);
     }
   }
-?>

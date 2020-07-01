@@ -37,7 +37,7 @@ div.overlay form {
   border: 0.25em solid gray;
 }
 
-/* Without this, file kept overflowing the form */
+/* Without this, file element kept overflowing the form */
 input[type="text"], label, input[type="file"] {
   width: 100%;
 }
@@ -126,10 +126,8 @@ div.func {
 }
 
 div.item {
-    border: 1px solid black;
     word-wrap: break-word;
     text-align: center;
-
 }
 
 div.item figure img {
@@ -137,6 +135,6 @@ div.item figure img {
     
 }
 
-div.item a, div.item a:visited {
+div.item a, div.item a:visited, a:link {
     text-decoration: none;
 }

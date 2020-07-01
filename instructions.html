@@ -1,12 +1,6 @@
 <html>
   <head>
     <title>Read Me</title>
-    <style>
-      .strike {
-      text-decoration: line-through
-      }
-    </style>
-    
   </head>
 
   <body>
@@ -21,7 +15,7 @@
     <li>Set up all your files under the sem4 folder - this folder MUST contain index.php</li>
     <li>Note: sem4 can have directories and subdirectories, and it is not necessary to manually place index.php in these folders</li>
     <li>Then you can start up apache+mysql from XAMPP control panel and view the files by localhost/project/sem4</li>
-    <li>Limitations: You SHOULD NOT have .php files in any of the directories</li>
+    <li>Limitations: You SHOULD NOT have index.php files in any of the directories</li>
     <li>Warning: for now untested on Linux</li>
     <li>Warning 2: tested only with PHP7</li>
   </ol>
@@ -30,12 +24,12 @@
       <code>
   CREATE DATABASE project;
   USE project;
-        CREATE TABLE user(username varchar(30) PRIMARY KEY, password varchar(30), permission varchar(5), applied boolean, req_perm varchar(5));
-        CREATE TABLE file(filename varchar(255), path varchar(255), dir boolean, indexed boolean, type varchar(3), datetime timestamp, class varchar(3), PRIMARY KEY(filename, path, dir));
-        /*
-        Default user - admin
-        */
-        INSERT INTO user values('admin', 'admin', 'admin', FALSE, NULL);
+  CREATE TABLE user(username varchar(30) PRIMARY KEY, password varchar(30), permission varchar(5), applied boolean, req_perm varchar(5));
+  CREATE TABLE file(filename varchar(255), path varchar(255), dir boolean, indexed boolean, type varchar(3), datetime timestamp, class varchar(3), PRIMARY KEY(filename, path, dir));
+  /*
+  Default user - admin
+  */
+  INSERT INTO user values('admin', 'admin', 'admin', FALSE, NULL);
       </code>
     </pre>
 
@@ -58,8 +52,9 @@
     
     <h1>TO DO</h1>
     <ul>
+      <li>redo scanning</li>
       <li>login</li>
-      <li>If only 1 login.php -> then need to redirect after logging in</li>
+      <li>redo schema for user table - classes/groups of users like *nix</li>
       <li>admin tools</li>
       <li>request for admin</li>
       <li>upload file(s) - PLURAL</li>

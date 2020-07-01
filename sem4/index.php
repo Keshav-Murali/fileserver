@@ -54,7 +54,7 @@
       <?php
         $result = $mysqli->query("SELECT * from $FILE_TABLE where dir=1 and filename='".$dir_name."' and path='".$escaped_parent_dir."'");
 		    
-        // We follow the convention: $file_list is retrieved by scandir or from dba_close
+        // We follow the convention: $file_list is retrieved from the database
         // $new_list is formed and has the required info to display in the page
         
         // We also need 2 arrays: filenames and directory names for JavaScript
@@ -68,50 +68,11 @@
 		    
         // In case the directory has not been inserted or indexed, we need to do that
         if (($result->num_rows == 0) || ($templist[0]['indexed'] == 0)) {
-          $mysqli->query("INSERT INTO $FILE_TABLE values('$dir_name', '$escaped_parent_dir', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
-
-          $file_list = scandir(".", 1);
-          $file_list_size = count($file_list);
-
           $new_list = array();
-          $new_list_size = 0;
-
-          for ($i = 0; $i < $file_list_size; $i++) {
-            if (! ((preg_match('/.php/i', $file_list[$i])) || (is_dir($file_list[$i])))) {
-              $ftype = return_file_type($file_list[i]);
-              $file_image = return_img_link($file_list[i], $ftype);
-              
-              array_push($js_file_list, $file_list[$i]);
-              
-              $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
-              $new_list_size++;
-              $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
-            }
-
-            else if (is_dir($file_list[$i])) {
-              // We want to prevent . and .. as folder names as well
-              array_push($js_dir_list, $file_list[$i]);
-              
-              if (! (($file_list[$i] == ".") || ($file_list[$i] == "..") || (preg_match('/_files/i', $file_list[$i])))) {	  
-                $ftype = "DIR";
-                $file_image = $folderlink;
-
-                // Replicated because we do NOT want to add . or .. to the list
-                // I found that out the hard way by cleverly putting this only once
-                // as the last line of the loop
-
-	              $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
-                $new_list_size++;
-             
-	              $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 1, 0, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	
-				        // Replicate index.php in sub-directory
-                if ($WINDOWS)
-                  copy("index.php", $file_list[$i].'\\'."index.php");	
-                else
-                  copy("index.php", $file_list[$i].'/'."index.php");
-              }
-            }
-          }
+          
+          // TRUE => scanning current directory (not subdirectories), so we need the lists 
+          scan_dir_recursive($parent_dir, $dir_name, $mysqli, $js_file_list, $js_dir_list, $new_list, TRUE);
+          $new_list_size = count($new_list);
         }
 
         else {
