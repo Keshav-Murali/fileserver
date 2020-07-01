@@ -15,6 +15,11 @@
   // See the quoted file to see the conventions used for the various paths
   require_once 'paths_gen.php';
   
+  // We need 2 arrays: filenames and directory names for JavaScript
+  // This is for client-side validation of the file upload form
+  $js_file_list = array();
+  $js_dir_list = array();
+
   // Form processing
   require_once 'form_processing.php';
           
@@ -57,12 +62,6 @@
         // We follow the convention: $file_list is retrieved from the database
         // $new_list is formed and has the required info to display in the page
         
-        // We also need 2 arrays: filenames and directory names for JavaScript
-        // This is for client-side validation of the file upload form
-        // Those two arrays are $js_file_list and $js_dir_list
-        $js_file_list = array();
-        $js_dir_list = array();
-        
 		    if ($result->num_rows != 0)
 		      $templist = $result->fetch_all(MYSQLI_ASSOC);
 		    
@@ -70,8 +69,9 @@
         if (($result->num_rows == 0) || ($templist[0]['indexed'] == 0)) {
           $new_list = array();
           
-          // TRUE => scanning current directory (not subdirectories), so we need the lists 
-          scan_dir_recursive($parent_dir, $dir_name, $mysqli, $js_file_list, $js_dir_list, $new_list, TRUE);
+          // The last two boolean arguments - first is if it is the original folder
+          // Second is if it is a rescan          
+          scan_dir_recursive($parent_dir, $dir_name, $mysqli, $js_file_list, $js_dir_list, $new_list, TRUE, FALSE);
           $new_list_size = count($new_list);
         }
 

@@ -12,21 +12,26 @@
   }
   
   function return_file_type($file_name) {
-    if ( preg_match('/.jpeg|.jpg|.png|.webp|.gif|.bmp/i', $file_name))
+    if (preg_match('/.jpeg|.jpg|.png|.webp|.gif|.bmp/i', $file_name))
       return "IMG";
-    else if ( preg_match('/.pdf|.doc|.docx|.epub|.djvu/i', $file_name))
+    else if (preg_match('/.pdf|.doc|.docx|.epub|.djvu/i', $file_name))
       return "DOC";
     else 
       return "FIL";
   }
   
-  // if $original is true, then we need to set the referenced variables - otherwise, we ignore them
-  function scan_dir_recursive($parent_dir, $dir_name, $mysqli, &$js_file_list, &$js_dir_list, &$new_list, $original) {
+  // if $is_original, then we need to set the referenced variables - otherwise, we ignore them
+  // if $is_rescan, then we are rescanning - so we clear the database of the directory contents first
+  function scan_dir_recursive($parent_dir, $dir_name, $mysqli, &$js_file_list, &$js_dir_list, &$new_list, $is_original, $is_rescan) {
     global $FILE_TABLE, $fs_root, $folderlink;
     $path = $parent_dir.DIRECTORY_SEPARATOR.$dir_name;
     $escaped_parent_dir = str_replace("\\", "\\\\", $parent_dir);
     $escaped_path = str_replace("\\", "\\\\", $path);
 
+    if ($is_rescan) {
+      $mysqli->query("DELETE FROM $FILE_TABLE where path='$escaped_path'");
+    }
+    
     $mysqli->query("INSERT INTO $FILE_TABLE values('$dir_name', '$escaped_parent_dir', 1, 1, 'DIR', CURRENT_TIMESTAMP(), 'Pub') ON DUPLICATE KEY UPDATE indexed=1");
 
     $file_list = scandir($fs_root.$path);
@@ -39,7 +44,7 @@
         $file_image = return_img_link($file_list[$i], $ftype);
         $mysqli->query("INSERT INTO $FILE_TABLE values('$file_list[$i]', '$escaped_path', 0, 1, '$ftype', CURRENT_TIMESTAMP(), 'Pub')");	    
 
-        if ($original) {
+        if ($is_original) {
           array_push($js_file_list, $file_list[$i]);
           $new_list[$new_list_size] = array("name" => $file_list[$i], "image" => $file_image);
           $new_list_size++;
@@ -48,13 +53,13 @@
 
       else if (is_dir($file_list[$i])) {
         // We want to prevent . and .. as folder names as well
-        if ($original)
+        if ($is_original)
           array_push($js_dir_list, $file_list[$i]);
         
         if (! (($file_list[$i] == ".") || ($file_list[$i] == "..") || (preg_match('/_files/i', $file_list[$i])))) {	  
           $ftype = "DIR";
           
-          if ($original) {
+          if ($is_original) {
             $file_image = $folderlink;
             // Replicated because we do NOT want to add . or .. to the list
             // I found that out the hard way by cleverly putting this only once
@@ -67,7 +72,7 @@
           // Replicate index.php in sub-directory
           copy("index.php", $file_list[$i].DIRECTORY_SEPARATOR."index.php");
           // Recursively index subdirectory
-          scan_dir_recursive($path, $file_list[$i], $mysqli, $js_file_list, $js_dir_list, $new_list, FALSE);          
+          scan_dir_recursive($path, $file_list[$i], $mysqli, $js_file_list, $js_dir_list, $new_list, FALSE, $is_rescan);          
         }
       }
     }

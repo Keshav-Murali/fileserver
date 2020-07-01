@@ -1,9 +1,10 @@
 <div class="wrapper">
   <?php
-    echo '<div class="func"><button type="button" onclick="displayForm(0)">Create folder</button></div>';
-    echo '<div class="func"><button type="button" onclick="displayForm(1)">Upload file</button></div>';
-    echo '<div class="func"><button type="button" onclick="displayChoice(0)">Delete</button></div>';
-    echo '<div class="func"><button type="button" onclick="displayChoice(1)">Rename</button></div>';
+    echo '<div class="func" onclick="displayForm(\'folder_form\')"><button type="button">Create folder</button></div>';
+    echo '<div class="func" onclick="displayForm(\'file_form\')"><button type="button">Upload file</button></div>';
+    echo '<div class="func" onclick="displayForm(\'rescan_form\')"><button type="button">Rescan</button></div>';
+    echo '<div class="func" onclick="displayChoice(0)"><button type="button">Delete</button></div>';
+    echo '<div class="func" onclick="displayChoice(1)"><button type="button">Rename</button></div>';
   ?>
 </div>
 
@@ -42,7 +43,19 @@
   <button type="submit" name="file_form" action="">Check and Submit</button>
   <button type="button" onclick="closeOverlay(this)">Close</button>  </form>
   
-  <form id="delete_form" class="function_form" action="" method="POST">
+  <form id="rescan_form" method="POST" enctype="application/x-www-form-urlencoded" class="function_form" onsubmit="return validateFolderForm(this)">
+  <fieldset>
+    <legend>Rescan / Reindex</legend>
+  </fieldset>
+  <label class="error">This will rescan the current directory and its subdirectories recursively.
+  This may take a long time. Are you sure you want to continue?
+  </label><br>
+
+  <button type="submit" name="rescan_form" action="">Confirm</button>
+  <button type="button" onclick="closeOverlay(this)">Close</button>
+  </form>
+  
+  <form id="delete_form" enctype="application/x-www-form-urlencoded" class="function_form" action="" method="POST">
     <fieldset>
       <legend>Delete</legend>
       <table>
@@ -61,7 +74,7 @@
     <button type="button" onclick="closeOverlay(this)">Close</button>
   </form>
 
-  <form id="rename_form" class="function_form" action="" method="POST" onsubmit="return validateRenameForm(this)">
+  <form id="rename_form" enctype="application/x-www-form-urlencoded" class="function_form" action="" method="POST" onsubmit="return validateRenameForm(this)">
   <fieldset>
       <legend>Rename</legend>
       <table>

@@ -1,14 +1,30 @@
-function displayForm(num) {
+function displayForm(choice) {
   overlay = document.getElementById("overlay");
   overlay.style.display = "block";
   
-  switch(num) {
-    case 0: elt = document.getElementById("folder_form"); break;
-    case 1: elt = document.getElementById("file_form"); break;
-  }
- 
+  elt = document.getElementById(choice); 
   elt.style.visibility = "visible";
   elt.style.display = "inline-block";
+}
+
+function displayChoice(num) {
+  if (num == 1) {
+    arr = document.getElementsByClassName('ren_pointer');
+    other = document.getElementsByClassName('del_pointer');
+  }
+  else if (num == 0) {
+    arr = document.getElementsByClassName('del_pointer');
+    other = document.getElementsByClassName('ren_pointer');
+  }
+  for (elt of other) {
+    elt.style.display = "none";
+  }
+  for (elt of arr) {
+    if (elt.style.display == "inline-block")
+      elt.style.display = "none"; 
+    else
+      elt.style.display = "inline-block";
+  }
 }
 
 function closeOverlay(x) {    
@@ -68,28 +84,6 @@ function validateFileForm(v) {
   }  
     return true;
 }
-
-
-function displayChoice(num) {
-  if (num == 1) {
-    arr = document.getElementsByClassName('ren_pointer');
-    other = document.getElementsByClassName('del_pointer');
-  }
-  else if (num == 0) {
-    arr = document.getElementsByClassName('del_pointer');
-    other = document.getElementsByClassName('ren_pointer');
-  }
-  for (elt of other) {
-    elt.style.display = "none";
-  }
-  for (elt of arr) {
-    if (elt.style.display == "none")
-      elt.style.display = "inline-block"; 
-    else
-      elt.style.display = "none";
-  }
-}
-
 
 function delForm(num)
 {

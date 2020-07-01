@@ -1,5 +1,4 @@
 <?php
-
   if (isset($_POST)) {
     if (isset($_POST['folder_form'])) {
       $folder_name = $_POST['folder_name'];
@@ -67,6 +66,10 @@
         
         // If there are arise any issues, it'll certainly be related to whitespace. Will check soon 
       }
+    }
+    
+    else if (isset($_POST['rescan_form'])) {
+      scan_dir_recursive($parent_dir, $dir_name, $mysqli, $js_file_list, $js_dir_list, $new_list, TRUE, TRUE);
     }
   }
 ?>
