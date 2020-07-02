@@ -71,5 +71,26 @@
     else if (isset($_POST['rescan_form'])) {
       scan_dir_recursive($parent_dir, $dir_name, $mysqli, $js_file_list, $js_dir_list, $new_list, TRUE, TRUE);
     }
+    
+    else if (isset($_POST['login_form'])) {
+      $user_name = $_POST['user_name'];
+      $password = $_POST['password'];
+      
+      $result = $mysqli->query("SELECT * from $USER_TABLE WHERE username='$user_name' AND password='$password'");
+      if ($result->num_rows == 0) {
+        $LOGIN = FALSE;
+      }
+      
+      else {
+        $LOGIN = TRUE;
+        $_SESSION['user_name'] = $user_name;
+      }
+    }
+    
+    else if (isset($_POST['logout_form'])) {
+      $_SESSION = [];
+      session_destroy();
+    }
+    
   }
 ?>

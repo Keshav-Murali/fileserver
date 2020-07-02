@@ -187,3 +187,8 @@ function validateRenameForm(obj) {
   }
   return true;
 }
+
+function logout() {
+  elt = document.getElementById("logout_form");
+  elt.submit();
+}

@@ -38,7 +38,7 @@ div.overlay form {
 }
 
 /* Without this, file element kept overflowing the form */
-input[type="text"], label, input[type="file"] {
+input[type="text"], label, input[type="file"], input[type="password"] {
   width: 100%;
 }
 
@@ -46,7 +46,7 @@ legend {
   font-weight: bold;
 }
 
-label.error {
+.error {
   color: red;
 }
 

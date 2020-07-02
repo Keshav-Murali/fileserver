@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 
 <?php
+  session_start();
   /* config.php has most of the constants that are required
      Examples: Database, relation details, image links
      functions.php has helper functions 
@@ -38,6 +39,16 @@
   </head>
 
   <body>
+    <span class="error" id="login_error">
+      <?php
+        if (isset($LOGIN)) {
+          if ($LOGIN == FALSE)
+            echo "Login unsuccessful. Try again";
+          else if ($LOGIN == TRUE)
+            echo "Logged in successfully as user ".$_SESSION['user_name'];
+        }
+      ?>
+    </span>
     <h1>
       <?php
         if ($path == "/project/sem4" || $path == "\project\sem4")

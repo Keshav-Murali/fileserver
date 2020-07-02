@@ -1,14 +1,42 @@
 <div class="wrapper">
   <?php
-    echo '<div class="func" onclick="displayForm(\'folder_form\')"><button type="button">Create folder</button></div>';
-    echo '<div class="func" onclick="displayForm(\'file_form\')"><button type="button">Upload file</button></div>';
-    echo '<div class="func" onclick="displayForm(\'rescan_form\')"><button type="button">Rescan</button></div>';
-    echo '<div class="func" onclick="displayChoice(0)"><button type="button">Delete</button></div>';
-    echo '<div class="func" onclick="displayChoice(1)"><button type="button">Rename</button></div>';
+    if (isset($_SESSION['user_name'])) {
+      echo '<div class="func"><button onclick="displayForm(\'folder_form\')" type="button">Create folder</button></div>';
+      echo '<div class="func"><button onclick="displayForm(\'file_form\')" type="button">Upload file</button></div>';
+      echo '<div class="func"><button onclick="displayForm(\'rescan_form\')" type="button">Rescan</button></div>';
+      echo '<div class="func"><button onclick="displayChoice(0)" type="button">Delete</button></div>';
+      echo '<div class="func"><button onclick="displayChoice(1)" type="button">Rename</button></div>';
+      echo '<div class="func"><button onclick="logout()" type="button">Logout</button></div>';
+    }
+    else {
+      echo '<div class="func"><button onclick="displayForm(\'login_form\')" type="button">Login</button></div>';
+    }
   ?>
 </div>
 
 <div class="overlay" id="overlay">
+  <form id="logout_form" action="" method="POST" enctype="application/x-www-form-urlencoded" class="function_form">
+  <input type="text" name="logout_form" value="logout_form" hidden>
+  </form>
+  
+  <form id="login_form" method="POST" enctype="application/x-www-form-urlencoded" class="function_form">
+  <fieldset>
+    <legend>Login</legend>
+    <table>
+      <tr>
+        <td><label for="user_name">User name</label></td>
+        <td><input type="text" id="user_name" name="user_name" required></td>
+      </tr>
+      <tr>
+        <td><label for="password">Password</label></td>
+        <td><input type="password" id="password" name="password" required></td>
+      </tr>
+    </table>
+  </fieldset>
+  <button type="submit" name="login_form" action="">Login</button>
+  <button type="button" onclick="closeOverlay(this)">Cancel and Close</button>
+  </form>
+  
   <form id="folder_form" method="POST" enctype="application/x-www-form-urlencoded" class="function_form" onsubmit="return validateFolderForm(this)">
   <fieldset>
     <legend>Create folder</legend>
